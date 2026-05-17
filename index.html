@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Uganda Hospitals</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+        <script src="epicollect.config.js"></script>
+        <script src="epicollect.js"></script>
+        <link rel="stylesheet" href="style/style.css" />
+        <link rel="stylesheet" href="style/epi_style.css" />
+    </head>
+    <body>
+        <header>
+            <h1>Uganda Hospitals</h1>
+            <p>Hackathon Project</p>
+        </header>
+        <div class="container">
+            <div id="map"></div>
+            <div class="sidebar">
+                <div class="sidebar-header feature-sidebar">Feature Details</div>
+                <div class="sidebar-content">
+                    <div class="no-selection">Click on a feature to view details</div>
+                </div>
+                <div class="sidebar-header collected-sidebar">Collected Data</div>
+                <div class="sidebar-content">
+                    <table class="hospital-table">
+                        <tr>
+                            <td>Total collected survey</td>
+                            <td id="total-collected">0</td>
+                        </tr>
+                        <tr>
+                            <td>Last added</td>
+                            <td id="last-added">-</td>
+                        </tr>
+                        <tr>
+                            <td>See survey</td>
+                            <td><button onclick="showEpicollect()">Open</button></td>
+                        </tr>
+                        <tr>
+                            <td>Fetch latest</td>
+                            <td>
+                                <button id="fetch-btn" onclick="fetchEpiCollectData()">Refresh</button>
+                                <div id="last-sync" style="font-size: 11px; color: #666; margin-top: 5px;"></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="fetch-status" style="margin-top: 10px; font-size: 12px; display: none;"></div>
+                </div>
+                <div class="sidebar-header hospital-sidebar">Hospital data</div>
+                <div class="sidebar-content">
+                    <table class="hospital-table">
+                        <tr>
+                            <td>Total Uganda hospitals</td>
+                            <td>7,463</td>
+                        </tr>
+                        <tr>
+                            <td>Total Kampala hospitals</td>
+                            <td>2,447</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="epiCollectOverlay" class="epi-overlay">
+            <div class="epiCollectTable">
+                <button class="close-btn" onclick="closeEpicollect()">×</button>
+                <h2>EpiCollect Data</h2>
+                <div class="table-wrapper">
+                    <table id="csvTable">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <script src="https://unpkg.com/georaster"></script>
+        <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
+        <script type="module" src="map.js"></script>
+    </body>
+</html>

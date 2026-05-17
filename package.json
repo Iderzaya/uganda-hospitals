@@ -1,0 +1,21 @@
+{
+  "name": "uganda-hospitals-dashboard",
+  "version": "1.0.0",
+  "description": "Interactive map dashboard for Uganda hospital survey data",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "server": "node index.js"
+  },
+  "keywords": [
+    "mapping",
+    "health-facilities",
+    "crowdsourcing",
+    "uganda"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
