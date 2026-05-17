@@ -61,18 +61,18 @@ function handleEpiCollectFetch(req, res) {
     req.on('end', () => {
         try {
             const payload = JSON.parse(body);
-            const { formRef, authToken } = payload;
+            const { formRef, projectSlug, authToken } = payload;
 
-            if (!formRef) {
+            if (!formRef || !projectSlug) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({
                     success: false,
-                    error: 'Form reference is required',
+                    error: 'Form reference and project slug are required',
                 }));
                 return;
             }
 
-            fetchEpiCollectAPI(formRef, authToken, (err, entries) => {
+            fetchEpiCollectAPI(projectSlug, formRef, authToken, (err, entries) => {
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({
@@ -114,9 +114,8 @@ function handleEpiCollectFetch(req, res) {
     });
 }
 
-function fetchEpiCollectAPI(formRef, authToken, callback) {
-    const projectSlug = 'hospital-infrastructure-mapping-kampala';
-    const epicollectUrl = new URL(`https://five.epicollect.net/api/export/entries/${projectSlug}`);
+function fetchEpiCollectAPI(projectSlug, formRef, authToken, callback) {
+    const epicollectUrl = new URL(`https://five.epicollect.net/api/export/project/${projectSlug}`);
     epicollectUrl.searchParams.append('form_ref', formRef);
 
     const urlStr = epicollectUrl.toString();

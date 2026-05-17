@@ -1,5 +1,5 @@
 export const EPICOLLECT_CONFIG = {
-    baseUrl: 'https://five.epicollect.net/api/export/entries',
+    baseUrl: 'https://five.epicollect.net/api/export/project/',
     projectSlug: 'hospital-infrastructure-mapping-kampala',
     formRef: '004763649a194fe0b26e4db270ea6a8c',
     authToken: null,

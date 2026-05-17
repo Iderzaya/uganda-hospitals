@@ -1,3 +1,10 @@
+// EpiCollect Configuration
+window.epicollectConfig = {
+    formRef: '',
+    authToken: null,
+    projectSlug: 'hospital-infrastructure-mapping-kampala',
+};
+
 function showEpicollect() {
     document.getElementById("epiCollectOverlay").style.display = "flex";
     const overlay = document.getElementById("epiCollectOverlay");
@@ -56,11 +63,12 @@ document.addEventListener('DOMContentLoaded', displayLastSyncTime);
 async function fetchEpiCollectData() {
     try {
         const formRef = window.epicollectConfig?.formRef;
+        const projectSlug = window.epicollectConfig?.projectSlug;
         const authToken = window.epicollectConfig?.authToken || null;
 
-        if (!formRef) {
+        if (!formRef || !projectSlug) {
             const statusEl = document.getElementById('fetch-status');
-            statusEl.textContent = '✗ Form reference not configured in epicollect.config.js';
+            statusEl.textContent = '✗ EpiCollect config incomplete in epicollect.config.js';
             statusEl.style.color = '#f44336';
             statusEl.style.display = 'block';
             return;
@@ -71,7 +79,7 @@ async function fetchEpiCollectData() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ formRef, authToken }),
+            body: JSON.stringify({ formRef, projectSlug, authToken }),
         });
 
         const result = await response.json();
