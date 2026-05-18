@@ -50,8 +50,10 @@ export function populateTable(data) {
 
     const headerNames = [
         ...COLUMNS_TO_SHOW.map(col => COLUMN_CONFIG[col]),
-        "AI Evaluation",
-        "AI Confidence Score",
+        "GPS Evaluation",
+        "GPS Confidence",
+        "GPS Notes",
+        "Duplicate Status"
     ];
 
     let headerHTML = "<tr>";
@@ -83,11 +85,60 @@ export function populateTable(data) {
             }
         });
 
-        bodyHTML += `<td style="text-align: center;">-</td>`;
-        bodyHTML += `<td style="text-align: center;">-</td>`;
+        // GPS Evaluation with color coding
+        const gpsEvaluation = row["GPS Evaluation"] || "-";
+        const statusColor = getStatusColor(gpsEvaluation);
+        bodyHTML += `<td style="text-align: center; color: ${statusColor};">${gpsEvaluation}</td>`;
+
+        // GPS Confidence as percentage
+        const gpsConfidence = row["GPS Confidence"] || "0";
+        bodyHTML += `<td style="text-align: center;">${gpsConfidence}%</td>`;
+        // GPS Notes
+        const gpsNotes = row["GPS Notes"] || "-";
+        bodyHTML += `<td>${gpsNotes}</td>`;
+
+        // Duplicate Status with color coding
+        const duplicateStatus = row["Duplicate Status"] || "-";
+        const duplicateColor = getDuplicateStatusColor(duplicateStatus);
+        bodyHTML += `<td style="text-align: center; color: ${duplicateColor}; font-weight: bold;">${duplicateStatus}</td>`;
 
         bodyHTML += "</tr>";
     });
 
     tbody.innerHTML = bodyHTML;
+}
+
+export function getStatusColor(status) {
+    switch (status) {
+        case 'Location Verified':
+            return '#4CAF50'; // Green
+        case 'Need Manual Review':
+            return '#FF9800'; // Orange
+        default:
+            return '#999'; // Gray
+    }
+}
+
+export function getDuplicateStatusColor(status) {
+    if (!status || status === "-") {
+        return '#999'; // Gray
+    }
+
+    if (status.includes('Exact Duplicate')) {
+        return '#f44336'; // Red - exact duplicates
+    }
+
+    if (status.includes('Near Duplicate')) {
+        return '#FF9800'; // Orange - near duplicates, needs review
+    }
+
+    if (status === 'Unique') {
+        return '#4CAF50'; // Green - unique
+    }
+
+    if (status.includes('No Image') || status.includes('Error')) {
+        return '#999'; // Gray - no image or error
+    }
+
+    return '#999'; // Gray default
 }

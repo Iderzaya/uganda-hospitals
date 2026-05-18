@@ -48,6 +48,20 @@
                                 <div id="last-sync" style="font-size: 11px; color: #666; margin-top: 5px;"></div>
                             </td>
                         </tr>
+                        <tr>
+                            <td>Validate GPS</td>
+                            <td>
+                                <button id="validate-btn" onclick="validateLocations()">Validate</button>
+                                <div id="last-validation" style="font-size: 11px; color: #666; margin-top: 5px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Detect Duplicates</td>
+                            <td>
+                                <button id="duplicate-btn" onclick="detectDuplicatePhotos()">Check Photos</button>
+                                <div id="last-duplicate-check" style="font-size: 11px; color: #666; margin-top: 5px;"></div>
+                            </td>
+                        </tr>
                     </table>
                     <div id="fetch-status" style="margin-top: 10px; font-size: 12px; display: none;"></div>
                 </div>
