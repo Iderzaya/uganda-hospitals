@@ -8,16 +8,6 @@ export async function loadCsvData(filePath) {
     }).data;
 }
 
-export function getLatestDate(data, dateField) {
-    const dates = data
-        .map(row => new Date(row[dateField]))
-        .filter(date => !isNaN(date));
-
-    if (dates.length === 0) return null;
-
-    return new Date(Math.max(...dates));
-}
-
 export function formatDate(date) {
     return date.toLocaleDateString("en-GB", {
         day: "numeric",
@@ -28,16 +18,17 @@ export function formatDate(date) {
 
 const COLUMN_CONFIG = {
     created_at: "Date Collected",
-    "1_Facility_type": "Facility Type",
-    lat_2_What_is_your_locat: "Latitude",
-    long_2_What_is_your_locat: "Longitude",
-    "3_Take_a_picture_of_": "Photo",
-    "4_How_does_the_build": "Building Condition",
-    "5_Are_there_windows_": "Windows",
-    "6_How_do_you_enter_t": "Entrance",
-    "7_What_type_of_road_": "Road Type",
-    "8_Can_a_car_reach_th": "Car Access",
-    "9_How_clean_are_the_": "Cleanliness",
+    "1_Facility_name": "Facility Name",
+    "2_Facility_type": "Facility Type",
+    latitude: "Latitude",
+    longitude: "Longitude",
+    "4_Take_a_picture_of_": "Photo",
+    "5_How_does_the_build": "Building Condition",
+    "6_Are_there_windows_": "Windows",
+    "7_How_do_you_enter_t": "Entrance",
+    "8_What_type_of_road_": "Road Type",
+    "9_Can_a_car_reach_th": "Car Access",
+    "10_How_clean_are_the": "Cleanliness",
 };
 
 const COLUMNS_TO_SHOW = Object.keys(COLUMN_CONFIG);
@@ -70,7 +61,7 @@ export function populateTable(data) {
         COLUMNS_TO_SHOW.forEach(colKey => {
             const value = row[colKey] || "";
 
-            if (colKey === "3_Take_a_picture_of_" && value) {
+            if (colKey === "4_Take_a_picture_of_" && value) {
                 bodyHTML += `<td><img src="${value}" alt="Photo" style="max-width: 100px; max-height: 80px; cursor: pointer;" onclick="window.open('${value}', '_blank')" /></td>`;
             } else if (colKey === "created_at" && value) {
                 const date = new Date(value);

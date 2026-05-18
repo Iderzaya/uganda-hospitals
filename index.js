@@ -96,25 +96,90 @@ function handleEpiCollectFetch(req, res) {
                 }
 
                 const csvFile = path.join(__dirname, 'Uganda', 'epiCollectForm.csv');
-                const csvLines = convertToCSVLines(entries);
 
-                fs.appendFile(csvFile, csvLines, (err) => {
-                    if (err) {
-                        res.writeHead(500, { 'Content-Type': 'application/json' });
+                if (entries.length === 0) {
+                    console.log('No new entries to add');
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: 'No new entries found',
+                        count: 0,
+                    }));
+                    return;
+                }
+
+                // CSV Header row
+                const csvHeaders = [
+                    'ec5_uuid', 'created_at', 'uploaded_at','title','1_Facility_name', '2_Facility_type',
+                    'latitude', 'longitude', 'accuracy', 'UTM_Northing', 'UTM_Easting', 'UTM_Zone',
+                    '4_Take_a_picture_of_', '5_How_does_the_build', '6_Are_there_windows_', '7_How_do_you_enter_t',
+                    '8_What_type_of_road_', '9_Can_a_car_reach_th', '10_How_clean_are_the',
+                    'GPS Evaluation', 'GPS Confidence', 'AI Evaluation', 'AI Confidence', 'GPS Notes',
+                    'Photo Hash', 'Duplicate Status'
+                ];
+                const headerRow = csvHeaders.map(h => `"${h}"`).join(',');
+
+                // Read existing CSV to get existing UUIDs
+                fs.readFile(csvFile, 'utf8', (err, csvData) => {
+                    let existingUuids = new Set();
+                    let fileExists = false;
+
+                    if (!err && csvData && csvData.trim()) {
+                        fileExists = true;
+                        const lines = csvData.trim().split('\n');
+                        // Skip header row (line 0)
+                        for (let i = 1; i < lines.length; i++) {
+                            const values = parseCSVLine(lines[i]);
+                            if (values[0]) {
+                                existingUuids.add(values[0]);
+                            }
+                        }
+                    }
+
+                    // Filter out entries that already exist
+                    const newEntries = entries.filter(entry => !existingUuids.has(entry.ec5_uuid));
+
+                    if (newEntries.length === 0) {
+                        console.log(`All ${entries.length} entries already exist in CSV`);
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({
-                            success: false,
-                            error: err.message,
+                            success: true,
+                            message: 'No new entries found (all already in database)',
+                            count: 0,
                         }));
                         return;
                     }
 
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({
-                        success: true,
-                        message: `Added ${entries.length} new entries`,
-                        count: entries.length,
-                        entries: entries,
-                    }));
+                    console.log(`Found ${newEntries.length} new entries (${existingUuids.size} already exist)`);
+                    const csvLines = convertToCSVLines(newEntries);
+
+                    console.log(`Converting ${newEntries.length} entries to CSV`);
+                    console.log(`CSV lines length: ${csvLines.length}`);
+                    console.log(`First line preview: ${csvLines.substring(0, 200)}`);
+
+                    // If file doesn't exist or is empty, prepend header
+                    const contentToWrite = fileExists ? csvLines : (headerRow + '\n' + csvLines);
+
+                    fs.appendFile(csvFile, contentToWrite, (err) => {
+                        if (err) {
+                            console.error('Error appending to CSV:', err);
+                            res.writeHead(500, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({
+                                success: false,
+                                error: err.message,
+                            }));
+                            return;
+                        }
+
+                        console.log(`Successfully appended ${newEntries.length} entries to ${csvFile}`);
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({
+                            success: true,
+                            message: `Added ${newEntries.length} new entries`,
+                            count: newEntries.length,
+                            entries: newEntries,
+                        }));
+                    });
                 });
             });
         } catch (error) {
@@ -128,8 +193,7 @@ function handleEpiCollectFetch(req, res) {
 }
 
 function fetchEpiCollectAPI(projectSlug, formRef, authToken, callback) {
-    const epicollectUrl = new URL(`https://five.epicollect.net/api/export/project/${projectSlug}`);
-    epicollectUrl.searchParams.append('form_ref', formRef);
+    const epicollectUrl = new URL(`https://five.epicollect.net/api/export/entries/${projectSlug}`);
 
     const urlStr = epicollectUrl.toString();
     console.log('Fetching from:', urlStr);
@@ -163,7 +227,24 @@ function fetchEpiCollectAPI(projectSlug, formRef, authToken, callback) {
                 }
 
                 const json = JSON.parse(data);
-                const entries = json?.data?.data || [];
+                console.log('API Response status: entries endpoint');
+
+                // Extract entries from the response
+                let entries = [];
+                if (Array.isArray(json)) {
+                    entries = json;
+                } else if (json.data && Array.isArray(json.data)) {
+                    entries = json.data;
+                } else if (json.data && Array.isArray(json.data.entries)) {
+                    entries = json.data.entries;
+                }
+
+                console.log(`Fetched ${entries.length} entries from EpiCollect`);
+                if (entries.length > 0) {
+                    console.log('First entry keys:', Object.keys(entries[0]));
+                    console.log('First entry:', JSON.stringify(entries[0], null, 2).substring(0, 500));
+                }
+
                 callback(null, entries);
             } catch (err) {
                 callback(new Error(`Parse Error: ${err.message}`));
@@ -176,21 +257,38 @@ function convertToCSVLines(entries) {
     if (!entries.length) return '';
 
     return entries.map(entry => {
-        const answers = entry.answers || {};
-        const createdAt = entry.created_at || '';
+        // Handle location object
+        const location = entry['3_What_is_your_locat'] || {};
+        const facilityType = entry['2_Facility_type'] || [];
+        const facilityTypeStr = Array.isArray(facilityType) ? facilityType.join(', ') : facilityType;
 
         return [
+            entry.ec5_uuid || '',
+            entry.created_at || '',
+            entry.uploaded_at || '',
             entry.title || '',
-            createdAt,
-            answers['lat_2_What_is_your_locat'] || '',
-            answers['long_2_What_is_your_locat'] || '',
-            answers['3_Take_a_picture_of_'] || '',
-            answers['4_How_does_the_build'] || '',
-            answers['5_Are_there_windows_'] || '',
-            answers['6_How_do_you_enter_t'] || '',
-            answers['7_What_type_of_road_'] || '',
-            answers['8_Can_a_car_reach_th'] || '',
-            answers['9_How_clean_are_the_'] || '',
+            entry['1_Facility_name'] || '',
+            entry['2_Facility_type'] ? (Array.isArray(entry['2_Facility_type']) ? entry['2_Facility_type'][0] : entry['2_Facility_type']) : '',
+            location.latitude || '',
+            location.longitude || '',
+            location.accuracy || '',
+            location.UTM_Northing || '',
+            location.UTM_Easting || '',
+            location.UTM_Zone || '',
+            entry['4_Take_a_picture_of_'] || '',
+            entry['5_How_does_the_build'] ? (Array.isArray(entry['5_How_does_the_build']) ? entry['5_How_does_the_build'][0] : entry['5_How_does_the_build']) : '',
+            entry['6_Are_there_windows_'] ? (Array.isArray(entry['6_Are_there_windows_']) ? entry['6_Are_there_windows_'][0] : entry['6_Are_there_windows_']) : '',
+            entry['7_How_do_you_enter_t'] ? (Array.isArray(entry['7_How_do_you_enter_t']) ? entry['7_How_do_you_enter_t'][0] : entry['7_How_do_you_enter_t']) : '',
+            entry['8_What_type_of_road_'] ? (Array.isArray(entry['8_What_type_of_road_']) ? entry['8_What_type_of_road_'][0] : entry['8_What_type_of_road_']) : '',
+            entry['9_Can_a_car_reach_th'] ? (Array.isArray(entry['9_Can_a_car_reach_th']) ? entry['9_Can_a_car_reach_th'][0] : entry['9_Can_a_car_reach_th']) : '',
+            entry['10_How_clean_are_the'] ? (Array.isArray(entry['10_How_clean_are_the']) ? entry['10_How_clean_are_the'][0] : entry['10_How_clean_are_the']) : '',
+            '', // GPS Evaluation (empty for new entries)
+            '', // GPS Confidence (empty for new entries)
+            '', // AI Evaluation (empty for new entries)
+            '', // AI Confidence (empty for new entries)
+            '', // GPS Notes (empty for new entries)
+            '', // Photo Hash (empty for new entries)
+            '', // Duplicate Status (empty for new entries)
         ]
             .map(v => `"${String(v).replace(/"/g, '""')}"`)
             .join(',');
@@ -394,8 +492,8 @@ function levenshteinDistance(str1, str2) {
 
 // Validate a single location against hospitals
 function validateLocation(entry, hospitals, radiusKm = 1) {
-    const entryLat = parseFloat(entry.lat_2_What_is_your_locat);
-    const entryLng = parseFloat(entry.long_2_What_is_your_locat);
+    const entryLat = parseFloat(entry.latitude);
+    const entryLng = parseFloat(entry.longitude);
     const entryName = entry.title || entry["1_Facility_type"] || "";
 
     if (isNaN(entryLat) || isNaN(entryLng)) {

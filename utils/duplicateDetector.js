@@ -145,7 +145,7 @@ async function detectDuplicates(entries) {
 
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
-    const imageUrl = entry['3_Take_a_picture_of_'];
+    const imageUrl = entry['4_Take_a_picture_of_'];
 
     // Skip if no image
     if (!imageUrl) {

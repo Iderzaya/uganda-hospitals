@@ -34,10 +34,6 @@
                             <td id="total-collected">0</td>
                         </tr>
                         <tr>
-                            <td>Last added</td>
-                            <td id="last-added">-</td>
-                        </tr>
-                        <tr>
                             <td>See survey</td>
                             <td><button onclick="showEpicollect()">Open</button></td>
                         </tr>
@@ -95,5 +91,34 @@
         <script src="https://unpkg.com/georaster"></script>
         <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
         <script type="module" src="map.js"></script>
+        <script>
+            // Make sidebar sections foldable
+            document.querySelectorAll('.sidebar-header').forEach(header => {
+                header.style.cursor = 'pointer';
+                header.style.userSelect = 'none';
+
+                // Add toggle indicator
+                header.innerHTML = '▼ ' + header.innerHTML;
+                header.dataset.expanded = 'true';
+
+                // Get next sibling content
+                const content = header.nextElementSibling;
+                if (content && content.classList.contains('sidebar-content')) {
+                    header.addEventListener('click', function() {
+                        const isExpanded = this.dataset.expanded === 'true';
+
+                        if (isExpanded) {
+                            content.style.display = 'none';
+                            this.dataset.expanded = 'false';
+                            this.innerHTML = '▶ ' + this.innerHTML.substring(2);
+                        } else {
+                            content.style.display = 'block';
+                            this.dataset.expanded = 'true';
+                            this.innerHTML = '▼ ' + this.innerHTML.substring(2);
+                        }
+                    });
+                }
+            });
+        </script>
     </body>
 </html>

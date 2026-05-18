@@ -2,7 +2,7 @@ import { loadHxl } from "./layers/hxlLayer.js";
 import { loadHospitals } from "./layers/hospitalLayer.js";
 import { initSidebar, setLoadingState } from "./sidebar.js";
 import { MAP_CONFIG } from "./utils/config.js";
-import { loadCsvData, getLatestDate, formatDate, populateTable } from "./utils/csvHandler.js";
+import { loadCsvData, formatDate, populateTable } from "./utils/csvHandler.js";
 import { createEpiMarker } from "./utils/markerBuilder.js";
 import chroma from 'https://esm.sh/chroma-js';
 
@@ -109,10 +109,7 @@ loadCsvData("Uganda/epiCollectForm.csv")
             if (marker) epiCollectMarkers.addLayer(marker);
         });
 
-        const latestDate = getLatestDate(data, "created_at");
         document.getElementById("total-collected").textContent = data.length;
-        document.getElementById("last-added").textContent = latestDate ? formatDate(latestDate) : "-";
-
         populateTable(data);
 
         overlayLayers["EpiCollect"] = epiCollectMarkers;
