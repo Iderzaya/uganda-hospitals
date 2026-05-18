@@ -73,6 +73,10 @@
                             <td>2,447</td>
                         </tr>
                     </table>
+                    <div style="margin-top: 15px; padding: 0 10px;">
+                        <h4 style="font-size: 12px; margin-bottom: 10px; color: #333;">Hospital Type Distribution</h4>
+                        <canvas id="hospitalTypeChart" height="120"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,6 +92,7 @@
                 </div>
             </div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://unpkg.com/georaster"></script>
         <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
         <script type="module" src="map.js"></script>
@@ -119,6 +124,77 @@
                     });
                 }
             });
+
+            // Initialize hospital type distribution pie chart
+            async function initHospitalChart() {
+                try {
+                    const response = await fetch('Uganda/hospitals.geojson');
+                    const geojson = await response.json();
+
+                    const typeCounts = {};
+                    const colors = {
+                        'clinic': '#FF6B6B',
+                        'hospital': '#4ECDC4',
+                        'pharmacy': '#45B7D1',
+                        'doctors': '#FFA07A',
+                        'other': '#95E1D3'
+                    };
+
+                    geojson.features.forEach(feature => {
+                        const type = feature.properties.amenity || 'other';
+                        typeCounts[type] = (typeCounts[type] || 0) + 1;
+                    });
+
+                    const labels = Object.keys(typeCounts).map(t =>
+                        t.charAt(0).toUpperCase() + t.slice(1)
+                    );
+                    const data = Object.values(typeCounts);
+                    const chartColors = Object.keys(typeCounts).map(t => colors[t] || colors['other']);
+
+                    const ctx = document.getElementById('hospitalTypeChart');
+                    if (ctx) {
+                        new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: chartColors,
+                                    borderColor: '#fff',
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            font: { size: 11 },
+                                            padding: 10,
+                                            usePointStyle: true
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const total = data.reduce((a, b) => a + b, 0);
+                                                const percentage = ((context.parsed * 100) / total).toFixed(1);
+                                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading hospital data:', error);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', initHospitalChart);
         </script>
     </body>
 </html>
