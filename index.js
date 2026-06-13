@@ -110,10 +110,10 @@ function handleEpiCollectFetch(req, res) {
 
                 // CSV Header row
                 const csvHeaders = [
-                    'ec5_uuid', 'created_at', 'uploaded_at','title','1_Facility_name', '2_Facility_type',
+                    'ec5_uuid', 'created_at', 'uploaded_at','title','1_Full_name','2_Facility_name', '3_Facility_type',
                     'latitude', 'longitude', 'accuracy', 'UTM_Northing', 'UTM_Easting', 'UTM_Zone',
-                    '4_Take_a_picture_of_', '5_How_does_the_build', '6_Are_there_windows_', '7_How_do_you_enter_t',
-                    '8_What_type_of_road_', '9_Can_a_car_reach_th', '10_How_clean_are_the',
+                    '5_Take_a_picture_of_', '6_How_does_the_build', '7_Are_there_windows_', '8_How_do_you_enter_t',
+                    '9_What_type_of_road_', '10_Can_a_car_reach_t', '11_How_clean_are_the',
                     'GPS Evaluation', 'GPS Confidence', 'AI Evaluation', 'AI Confidence', 'GPS Notes',
                     'Photo Hash', 'Duplicate Status'
                 ];
@@ -258,8 +258,8 @@ function convertToCSVLines(entries) {
 
     return entries.map(entry => {
         // Handle location object
-        const location = entry['3_What_is_your_locat'] || {};
-        const facilityType = entry['2_Facility_type'] || [];
+        const location = entry['4_What_is_your_locat'] || {};
+        const facilityType = entry['3_Facility_type'] || [];
         const facilityTypeStr = Array.isArray(facilityType) ? facilityType.join(', ') : facilityType;
 
         return [
@@ -267,21 +267,22 @@ function convertToCSVLines(entries) {
             entry.created_at || '',
             entry.uploaded_at || '',
             entry.title || '',
-            entry['1_Facility_name'] || '',
-            entry['2_Facility_type'] ? (Array.isArray(entry['2_Facility_type']) ? entry['2_Facility_type'][0] : entry['2_Facility_type']) : '',
+            entry['1_Full_name'] || '',
+            entry['2_Facility_name'] || '',
+            entry['3_Facility_type'] ? (Array.isArray(entry['3_Facility_type']) ? entry['3_Facility_type'][0] : entry['3_Facility_type']) : '',
             location.latitude || '',
             location.longitude || '',
             location.accuracy || '',
             location.UTM_Northing || '',
             location.UTM_Easting || '',
             location.UTM_Zone || '',
-            entry['4_Take_a_picture_of_'] || '',
-            entry['5_How_does_the_build'] ? (Array.isArray(entry['5_How_does_the_build']) ? entry['5_How_does_the_build'][0] : entry['5_How_does_the_build']) : '',
-            entry['6_Are_there_windows_'] ? (Array.isArray(entry['6_Are_there_windows_']) ? entry['6_Are_there_windows_'][0] : entry['6_Are_there_windows_']) : '',
-            entry['7_How_do_you_enter_t'] ? (Array.isArray(entry['7_How_do_you_enter_t']) ? entry['7_How_do_you_enter_t'][0] : entry['7_How_do_you_enter_t']) : '',
-            entry['8_What_type_of_road_'] ? (Array.isArray(entry['8_What_type_of_road_']) ? entry['8_What_type_of_road_'][0] : entry['8_What_type_of_road_']) : '',
-            entry['9_Can_a_car_reach_th'] ? (Array.isArray(entry['9_Can_a_car_reach_th']) ? entry['9_Can_a_car_reach_th'][0] : entry['9_Can_a_car_reach_th']) : '',
-            entry['10_How_clean_are_the'] ? (Array.isArray(entry['10_How_clean_are_the']) ? entry['10_How_clean_are_the'][0] : entry['10_How_clean_are_the']) : '',
+            entry['5_Take_a_picture_of_'] || '',
+            entry['6_How_does_the_build'] ? (Array.isArray(entry['6_How_does_the_build']) ? entry['6_How_does_the_build'][0] : entry['6_How_does_the_build']) : '',
+            entry['7_Are_there_windows_'] ? (Array.isArray(entry['7_Are_there_windows_']) ? entry['7_Are_there_windows_'][0] : entry['7_Are_there_windows_']) : '',
+            entry['8_How_do_you_enter_t'] ? (Array.isArray(entry['8_How_do_you_enter_t']) ? entry['8_How_do_you_enter_t'][0] : entry['8_How_do_you_enter_t']) : '',
+            entry['9_What_type_of_road_'] ? (Array.isArray(entry['9_What_type_of_road_']) ? entry['9_What_type_of_road_'][0] : entry['9_What_type_of_road_']) : '',
+            entry['10_Can_a_car_reach_t'] ? (Array.isArray(entry['10_Can_a_car_reach_t']) ? entry['10_Can_a_car_reach_t'][0] : entry['10_Can_a_car_reach_t']) : '',
+            entry['11_How_clean_are_the'] ? (Array.isArray(entry['11_How_clean_are_the']) ? entry['11_How_clean_are_the'][0] : entry['11_How_clean_are_the']) : '',
             '', // GPS Evaluation (empty for new entries)
             '', // GPS Confidence (empty for new entries)
             '', // AI Evaluation (empty for new entries)

@@ -18,17 +18,18 @@ export function formatDate(date) {
 
 const COLUMN_CONFIG = {
     created_at: "Date Collected",
-    "1_Facility_name": "Facility Name",
-    "2_Facility_type": "Facility Type",
+    "1_Full_name": "Submitted By",
+    "2_Facility_name": "Facility Name",
+    "3_Facility_type": "Facility Type",
     latitude: "Latitude",
     longitude: "Longitude",
-    "4_Take_a_picture_of_": "Photo",
-    "5_How_does_the_build": "Building Condition",
-    "6_Are_there_windows_": "Windows",
-    "7_How_do_you_enter_t": "Entrance",
-    "8_What_type_of_road_": "Road Type",
-    "9_Can_a_car_reach_th": "Car Access",
-    "10_How_clean_are_the": "Cleanliness",
+    "5_Take_a_picture_of_": "Photo",
+    "6_How_does_the_build": "Building Condition",
+    "7_Are_there_windows_": "Windows",
+    "8_How_do_you_enter_t": "Entrance",
+    "9_What_type_of_road_": "Road Type",
+    "10_Can_a_car_reach_t": "Car Access",
+    "11_How_clean_are_the": "Cleanliness",
 };
 
 const COLUMNS_TO_SHOW = Object.keys(COLUMN_CONFIG);
@@ -61,7 +62,7 @@ export function populateTable(data) {
         COLUMNS_TO_SHOW.forEach(colKey => {
             const value = row[colKey] || "";
 
-            if (colKey === "4_Take_a_picture_of_" && value) {
+            if (colKey === "5_Take_a_picture_of_" && value) {
                 bodyHTML += `<td><img src="${value}" alt="Photo" style="max-width: 100px; max-height: 80px; cursor: pointer;" onclick="window.open('${value}', '_blank')" /></td>`;
             } else if (colKey === "created_at" && value) {
                 const date = new Date(value);
